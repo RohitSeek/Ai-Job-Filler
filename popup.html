@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { width:380px; min-height:500px; background:#111827; color:#f3f4f6; font-family:Arial,sans-serif; font-size:13px; }
+.nav { display:flex; background:#1f2937; border-bottom:2px solid #374151; }
+.nav button { flex:1; padding:11px 6px; border:none; background:transparent; color:#9ca3af; font-size:12px; font-weight:bold; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; }
+.nav button.on { color:#a78bfa; border-bottom-color:#7c3aed; background:#111827; }
+.page { display:none; padding:14px; }
+.page.on { display:block; }
+.row { margin-bottom:10px; }
+.row label { display:block; font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:.6px; margin-bottom:4px; }
+.row input, .row textarea { width:100%; background:#1f2937; border:1px solid #374151; border-radius:6px; padding:8px 10px; color:#f3f4f6; font-size:12px; font-family:Arial,sans-serif; outline:none; }
+.row input:focus, .row textarea:focus { border-color:#7c3aed; }
+.row textarea { min-height:52px; resize:vertical; }
+.btn { display:block; width:100%; padding:11px; border:none; border-radius:7px; font-size:13px; font-weight:bold; cursor:pointer; margin-top:8px; }
+.btn-v { background:#7c3aed; color:#fff; }
+.btn-v:hover { background:#6d28d9; }
+.btn-v:disabled { background:#374151; color:#6b7280; cursor:not-allowed; }
+.btn-g { background:#065f46; color:#fff; }
+.btn-g:hover { background:#047857; }
+.btn-s { background:#1f2937; color:#d1d5db; border:1px solid #374151; }
+.btn-s:hover { border-color:#7c3aed; color:#a78bfa; }
+.log { background:#0f172a; border:1px solid #1e293b; border-radius:6px; padding:8px; height:120px; overflow-y:auto; font-size:11px; font-family:'Courier New',monospace; margin-top:10px; line-height:1.8; }
+.g{color:#34d399;} .b{color:#38bdf8;} .r{color:#f87171;} .y{color:#fbbf24;} .x{color:#6b7280;}
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:10px 0; }
+.stat { background:#1f2937; border-radius:6px; padding:8px; text-align:center; border:1px solid #374151; }
+.stat .n { font-size:20px; font-weight:bold; color:#7c3aed; }
+.stat .l { font-size:10px; color:#6b7280; margin-top:2px; }
+.flist { max-height:150px; overflow-y:auto; margin-top:8px; }
+.frow { display:flex; justify-content:space-between; align-items:center; padding:5px 8px; background:#1f2937; border-radius:5px; margin-bottom:3px; font-size:11px; }
+.fl { color:#d1d5db; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:190px; }
+.fv { color:#34d399; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; }
+.fp { color:#4b5563; }
+.urlbar { background:#1f2937; border:1px solid #374151; border-radius:6px; padding:7px 10px; font-size:11px; color:#a78bfa; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:10px; }
+.info { background:#1e293b; border:1px solid #334155; border-radius:6px; padding:10px; font-size:11px; color:#94a3b8; line-height:1.8; margin-top:10px; }
+.info a { color:#a78bfa; cursor:pointer; text-decoration:underline; }
+#toast { position:fixed; bottom:10px; left:50%; transform:translateX(-50%) translateY(60px); background:#059669; color:#fff; padding:7px 20px; border-radius:20px; font-size:12px; font-weight:bold; transition:transform .25s; white-space:nowrap; z-index:999; }
+#toast.show { transform:translateX(-50%) translateY(0); }
+#toast.bad { background:#dc2626; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <button id="nb-fill" class="on">Fill</button>
+  <button id="nb-profile">Profile</button>
+  <button id="nb-settings">Settings</button>
+</div>
+
+<div class="page on" id="pg-fill">
+  <div class="urlbar" id="urlbar">Loading...</div>
+  <div class="stats">
+    <div class="stat"><div class="n" id="sFound">-</div><div class="l">Found</div></div>
+    <div class="stat"><div class="n" id="sFilled">-</div><div class="l">Filled</div></div>
+    <div class="stat"><div class="n" id="sSkip">-</div><div class="l">Skipped</div></div>
+  </div>
+  <button class="btn btn-s" id="btnScan">Scan Page for Fields</button>
+  <div class="flist" id="flist"></div>
+  <button class="btn btn-v" id="btnFill" disabled>Auto-Fill This Page</button>
+  <div class="log" id="logbox">
+    <div class="b">AutoApply v4 ready.</div>
+    <div class="x">Click Scan to detect form fields.</div>
+  </div>
+</div>
+
+<div class="page" id="pg-profile">
+  <div id="pform"></div>
+  <button class="btn btn-g" id="btnSaveProfile">Save Profile</button>
+</div>
+
+<div class="page" id="pg-settings">
+  <div class="row">
+    <label>Gemini API Key</label>
+    <input type="password" id="apiKeyIn" placeholder="AIzaSy..." />
+  </div>
+  <button class="btn btn-v" id="btnSaveKey">Save Key</button>
+  <div class="info">
+    Get free key at: <a id="linkApiKey">aistudio.google.com/apikey</a><br>
+    Free: 1500 requests/day. No credit card.<br>
+    Key stored locally only.
+  </div>
+  <div class="info" style="margin-top:8px;">
+    AutoApply v4.0 - Gemini 2.0 Flash<br>
+    Works on Naukri, LinkedIn, Internshala, Greenhouse, Lever, Workday + more.
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="popup.js"></script>
+</body>
+</html>
